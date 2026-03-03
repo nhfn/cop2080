@@ -5,6 +5,21 @@ import pandas as pd
 import streamlit as st
 import random
 
+class Print_Iface():
+    def __init__(self):
+        self.xs = []
+        self.ys = []
+
+    def main_print(self, x, y):
+        self.xs.append(x)
+        self.ys.append(y)
+
+    def get_data(self):
+        return self.xs, self.ys
+
+
+
+
 
 ## Represent a cannonball, tracking its position and velocity.
 #
@@ -52,15 +67,30 @@ class Cannonball:
         self._vy = velocity * sin(angle)
         self.move(step, user_grav)
 
-        xs = []
-        ys = []
-
         while self.getY() > 1e-14:
-            xs.append(self.getX())
-            ys.append(self.getY())
+            if self.printer:
+                self.printer.main_print(self.getX(), self.getY())
             self.move(step, user_grav)
 
-        return xs, ys
+        if self.printer:
+            return self.printer.get_data()
+
+        return [], []
+
+class Crazyball(Cannonball):
+    def __init__(self, x, printer=None):
+        super().__init__(x, printer)
+
+    def move(self, sec, grav):
+        super().move(sec, grav)
+
+        rand_q = random.randrange(0, 10)
+
+        if self.getX() < 400:
+            self._vx += (rand_q - 5) * .1
+
+        if self.getY() > 50:
+            self._vy += (rand_q - 5) * .05
 
 def run_app():
     st.title("Cannonball Trajectory")
@@ -70,7 +100,7 @@ def run_app():
     )
     velocity = st.selectbox("Initial velocity", options=[15, 25, 40], index=1)
 
-    gravity_options = {"Earth": 9.81}
+    gravity_options = {"Earth": 9.81, "Moon": 1.62}
     gravity_name = st.selectbox("Gravity", options=list(gravity_options.keys()), index=0)
     gravity = gravity_options[gravity_name]
     step = .1
@@ -80,7 +110,10 @@ def run_app():
 
     if simulate:
         angle_rad = radians(angle_deg)
-        ball = Cannonball(0)
+
+        printer = Print_Iface()
+        ball = Crazyball(0, printer)
+
         xs, ys = ball.shoot(angle_rad, velocity, gravity, step)
 
         if not xs:
@@ -104,30 +137,3 @@ def run_app():
 if __name__ == "__main__":
     run_app()
 
-class Crazyball(Cannonball):
-    def __init__(self, x):
-        super().__init__(x)
-        self.rand_q = 0
-
-    def move(self, sec, grav):
-        super().move(sec, grav)
-
-        self.rand_q = random.randrange(0, 10)
-
-        if self.getX() < 400:
-            self._vx += (self.rand_q - 5) * .1
-
-        if self.getY() > 50:
-            self._vy += (self.rand_q - 5) * .05
-
-class Print_Iface():
-    def __init__(self):
-        self.xs = []
-        self.ys = []
-
-    def update(self, x, y):
-        self.xs.append(x)
-        self.ys.append(y)
-
-    def get_data(self):
-        return self.xs, self.ys
