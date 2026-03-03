@@ -18,9 +18,6 @@ class Print_Iface():
         return self.xs, self.ys
 
 
-
-
-
 ## Represent a cannonball, tracking its position and velocity.
 #
 class Cannonball:
