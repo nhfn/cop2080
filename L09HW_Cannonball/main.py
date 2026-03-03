@@ -12,11 +12,12 @@ class Cannonball:
     ## Create a new cannonball at the provided x position.
     #  @param x the x position of the ball
     #
-    def __init__(self, x):
+    def __init__(self, x, printer=None):
         self._x = x
         self._y = 0
         self._vx = 0
         self._vy = 0
+        self.printer = printer
 
     ## Move the cannon ball, using its current velocities.
     #  @param sec the amount of time that has elapsed.
@@ -102,3 +103,31 @@ def run_app():
 
 if __name__ == "__main__":
     run_app()
+
+class Crazyball(Cannonball):
+    def __init__(self, x):
+        super().__init__(x)
+        self.rand_q = 0
+
+    def move(self, sec, grav):
+        super().move(sec, grav)
+
+        self.rand_q = random.randrange(0, 10)
+
+        if self.getX() < 400:
+            self._vx += (self.rand_q - 5) * .1
+
+        if self.getY() > 50:
+            self._vy += (self.rand_q - 5) * .05
+
+class Print_Iface():
+    def __init__(self):
+        self.xs = []
+        self.ys = []
+
+    def update(self, x, y):
+        self.xs.append(x)
+        self.ys.append(y)
+
+    def get_data(self):
+        return self.xs, self.ys
